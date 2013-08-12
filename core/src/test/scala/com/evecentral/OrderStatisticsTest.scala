@@ -7,12 +7,11 @@ import org.scalatest.matchers.ShouldMatchers
 import akka.testkit.{TestKit}
 import akka.actor.{Props, ActorSystem}
 
-
 class OrderStatisticsTest(as: ActorSystem) extends TestKit(as) with FunSuite with ShouldMatchers with BeforeAndAfterAll {
 
 	def this() = this(ActorSystem("MySpec"))
 
-	val ca = system.actorOf(Props[OrderCacheActor])
+	lazy val ca = system.actorOf(Props[OrderCacheActor])
 
 	override def afterAll() {
 		system.shutdown()
@@ -98,7 +97,7 @@ class OrderStatisticsTest(as: ActorSystem) extends TestKit(as) with FunSuite wit
 
 
 
-	test("Cache actor put, expire") {
+	test("Cache actor put, expire", DbTest) {
 		val domain = StaticProvider.regionsByName("Domain")
 		val theforge = StaticProvider.regionsByName("The Forge")
 		val orders = List(makeOrder(1,1), makeOrder(1,1000))
