@@ -44,6 +44,24 @@ private class LazyOrderStatistics(over: Seq[MarketOrder], val highToLow: Boolean
   override lazy val min = OrderStatistics.min(over)
 }
 
+private class ComputedOrderStatistics(over: Seq[MarketOrder], val highToLow: Boolean = false) extends OrderStatistics {
+  import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics
+
+  lazy val priceStats = over.foldLeft(new DescriptiveStatistics) { (stats, order) => stats.addValue(order.price); stats }
+
+  override lazy val volume = over.map(_.volenter).sum
+  override lazy val wavg = over.map(_.weightPrice).sum / volume
+  override lazy val avg = priceStats.getMean
+  override lazy val variance = priceStats.getVariance
+  override lazy val stdDev = priceStats.getStandardDeviation
+  override lazy val median = priceStats.getPercentile(50)
+  override lazy val max = priceStats.getMax
+  override lazy val min = priceStats.getMin
+
+  lazy val sorted = OrderStatistics.sorted(over, highToLow)
+  override lazy val fivePercent = OrderStatistics.buyup(sorted, (volume * .05).toLong)
+}
+
 object OrderStatistics {
 
   import MarketOrder._
